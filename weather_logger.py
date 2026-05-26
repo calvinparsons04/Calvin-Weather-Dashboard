@@ -40,15 +40,12 @@ while True:
             "Rain Today": all_data.get("rainfall_day_in"),
             "Rain Rate": all_data.get("rain_rate_last_in") or 0,
             "Rain Last 24 Hr": all_data.get("rainfall_last_24_hr_in"),
-
-            "Wind Speed": all_data.get("wind_speed_last")
-            or all_data.get("wind_speed_avg_last_1_min")
-            or all_data.get("wind_speed_avg_last_2_min"),
+            
+            "Wind Speed": all_data.get("wind_speed_avg_last_1_min"),
 
             "Wind Gust": all_data.get("wind_speed_hi_last_10_min"),
-
-            "Wind Direction": all_data.get("wind_dir_last"),
-
+    
+            "Wind Direction": all_data.get("wind_dir_scalar_avg_last_1_min"),
             "Dew Point": all_data.get("dew_point"),
         }
 
