@@ -21,9 +21,9 @@ try:
 
     all_data = {}
 
-        for sensor in data["sensors"]:
-            for reading in sensor["data"]:
-                all_data.update(reading)
+    for sensor in data["sensors"]:
+        for reading in sensor["data"]:
+            all_data.update(reading)
 
         weather_data = {
             "Time": datetime.now(),
