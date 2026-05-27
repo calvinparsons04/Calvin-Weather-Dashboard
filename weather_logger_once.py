@@ -60,5 +60,5 @@ try:
 
         print("Saved:", datetime.now())
 
-    except Exception as e:
-        print("ERROR:", e)
+except Exception as e:
+    print("ERROR:", e)
