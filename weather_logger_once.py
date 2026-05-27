@@ -11,15 +11,15 @@ STATION_ID = 175546
 headers = {"X-Api-Secret": API_SECRET}
 
 
-    try:
+try:
 
-        url = f"https://api.weatherlink.com/v2/current/{STATION_ID}?api-key={API_KEY}"
+    url = f"https://api.weatherlink.com/v2/current/{STATION_ID}?api-key={API_KEY}"
 
-        response = requests.get(url, headers=headers, timeout=10)
+    esponse = requests.get(url, headers=headers, timeout=10)
 
-        data = response.json()
+    data = response.json()
 
-        all_data = {}
+    all_data = {}
 
         for sensor in data["sensors"]:
             for reading in sensor["data"]:
