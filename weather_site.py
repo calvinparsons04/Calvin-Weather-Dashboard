@@ -1,7 +1,7 @@
 
 import pandas as pd
 import streamlit as st
-
+import time
 st.set_page_config(page_title="Calvin's Weather Station", layout="wide")
 
 st.title("🌦️ Calvin's Winston-Salem Weather Station")
@@ -54,3 +54,6 @@ st.divider()
 
 with st.expander("Show raw weather data"):
     st.dataframe(df)
+
+time.sleep(60)
+st.rerun()
