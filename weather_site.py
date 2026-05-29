@@ -2,55 +2,165 @@
 import pandas as pd
 import streamlit as st
 import time
-st.set_page_config(page_title="Calvin's Weather Station", layout="wide")
+import math
 
-st.title("🌦️ Calvin's Winston-Salem Weather Station")
-st.caption("Live personal weather dashboard")
+st.set_page_config(page_title="Winston Salem, NC Weather Dashboard", layout="wide")
 
 df = pd.read_csv("weather_data_big.csv")
 df["Time"] = pd.to_datetime(df["Time"])
-
 latest = df.iloc[-1]
 
-st.markdown("### Current Conditions")
+def f_to_c(f):
+    return (f - 32) * 5 / 9 if pd.notna(f) else 0
+
+st.markdown("""
+<style>
+.stApp {
+    background: linear-gradient(135deg, #061229, #0b1f4d);
+    color: white;
+}
+.card {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    padding: 24px;
+    min-height: 170px;
+}
+.big {
+    font-size: 48px;
+    font-weight: 700;
+}
+.small {
+    font-size: 22px;
+    color: #7da2ff;
+}
+.label {
+    font-size: 20px;
+    font-weight: 700;
+}
+.rain-card {
+    background: rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 16px;
+    height: 150px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("# 📍 Winston Salem, NC Weather Dashboard")
+st.markdown(f"Last updated: **{latest['Time']}**  \n🟢 Auto-refreshing every 60 seconds")
+
+temp_f = latest["Temperature"]
+feels_f = latest["Feels Like"]
+humidity = latest["Humidity"]
+dew = latest["Dew Point"]
+wind = latest["Wind Speed"]
+gust = latest["Wind Gust"]
+wind_dir = latest["Wind Direction"]
+pressure = latest["Pressure"]
 
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("🌡️ Temperature", f"{latest['Temperature']} °F")
-col2.metric("🥵 Feels Like", f"{latest['Feels Like']} °F")
-col3.metric("💧 Humidity", f"{latest['Humidity']} %")
-col4.metric("🌬️ Wind", f"{latest['Wind Speed']} mph")
 
-col5, col6, col7, col8 = st.columns(4)
-col5.metric("💨 Wind Gust", f"{latest['Wind Gust']} mph")
-col6.metric("🧭 Wind Direction", f"{latest['Wind Direction']}°")
-col7.metric("🌧️ Rain Today", f"{latest['Rain Today']} in")
-col8.metric("📉 Pressure", f"{latest['Pressure']} inHg")
+with col1:
+    st.markdown(f"""
+    <div class="card">
+        <div class="label">🌡️ Temperature</div><br>
+        <div class="big">{temp_f:.1f} °F</div>
+        <div class="small">{f_to_c(temp_f):.1f} °C</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.divider()
+with col2:
+    st.markdown(f"""
+    <div class="card">
+        <div class="label">🧍 Feels Like</div><br>
+        <div class="big">{feels_f:.1f} °F</div>
+        <div class="small">{f_to_c(feels_f):.1f} °C</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-left, right = st.columns(2)
+with col3:
+    st.markdown(f"""
+    <div class="card">
+        <div class="label">💧 Humidity</div><br>
+        <div class="big">{humidity:.0f}%</div>
+        <div class="small">Dew Point: {dew:.1f} °F</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    st.markdown(f"""
+    <div class="card">
+        <div class="label">🌬️ Wind</div><br>
+        <div class="big">{wind:.1f} mph</div>
+        <div class="small">Direction: {wind_dir:.0f}°</div>
+        <div class="small">Gust: {gust:.1f} mph</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+left, right = st.columns([2, 1])
 
 with left:
-    st.subheader("Temperature / Feels Like")
-    st.line_chart(df.set_index("Time")[["Temperature", "Feels Like"]])
+    st.markdown("## 🌧️ Daily Rainfall")
 
-    st.subheader("Wind / Gusts")
-    st.line_chart(df.set_index("Time")[["Wind Speed", "Wind Gust"]])
+    df["Date"] = df["Time"].dt.date
+    daily_rain = df.groupby("Date")["Rain Today"].max().tail(7)
 
-    st.subheader("Rain")
-    st.line_chart(df.set_index("Time")[["Rain Today", "Rain Rate"]])
+    rain_cols = st.columns(len(daily_rain))
+
+    max_rain = max(daily_rain.max(), 0.01)
+
+    for col, (date, rain) in zip(rain_cols, daily_rain.items()):
+        bar_height = int((rain / max_rain) * 80)
+
+        with col:
+            st.markdown(f"""
+            <div class="rain-card">
+                <b>{date.strftime('%m/%d')}</b><br><br>
+                <span style="font-size:28px;font-weight:700;">{rain:.2f}</span> in
+                <div style="height:90px; display:flex; align-items:end;">
+                    <div style="
+                        width:28px;
+                        height:{bar_height}px;
+                        background:#4d79ff;
+                        border-radius:12px;
+                        margin-top:10px;">
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
 with right:
-    st.subheader("Humidity")
-    st.line_chart(df.set_index("Time")[["Humidity"]])
+    st.markdown("## 🧭 Pressure")
 
-    st.subheader("Pressure")
+    min_p = 28.5
+    max_p = 31.5
+    pct = max(0, min(100, ((pressure - min_p) / (max_p - min_p)) * 100))
+
+    st.markdown(f"""
+    <div class="card">
+        <div class="big">{pressure:.2f}</div>
+        <div class="small">inHg</div><br>
+        <div style="background:rgba(255,255,255,0.15);border-radius:20px;height:24px;">
+            <div style="background:#4d79ff;width:{pct}%;height:24px;border-radius:20px;"></div>
+        </div>
+        <br>
+        <div class="small">{min_p} → {max_p} inHg</div>
+        <div class="small">Trend: {latest["Pressure Trend"]}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("---")
+
+graph1, graph2 = st.columns(2)
+
+with graph1:
+    st.markdown("## 🌡️ Temperature History")
+    st.line_chart(df.set_index("Time")[["Temperature", "Feels Like"]])
+
+with graph2:
+    st.markdown("## 🧭 Pressure History")
     st.line_chart(df.set_index("Time")[["Pressure"]])
-
-    st.subheader("Dew Point")
-    st.line_chart(df.set_index("Time")[["Dew Point"]])
-
-st.divider()
 
 with st.expander("Show raw weather data"):
     st.dataframe(df)
