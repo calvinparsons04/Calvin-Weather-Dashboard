@@ -15,7 +15,7 @@ try:
 
     url = f"https://api.weatherlink.com/v2/current/{STATION_ID}?api-key={API_KEY}"
 
-    esponse = requests.get(url, headers=headers, timeout=10)
+    response = requests.get(url, headers=headers, timeout=10)
 
     data = response.json()
 
