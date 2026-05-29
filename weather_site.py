@@ -103,32 +103,43 @@ left, right = st.columns([2, 1])
 with left:
     st.markdown("## 🌧️ Daily Rainfall")
 
-    df["Date"] = df["Time"].dt.date
-    daily_rain = df.groupby("Date")["Rain Today"].max().tail(7)
+today_rain = latest["Rain Today"]
 
-    rain_cols = st.columns(len(daily_rain))
+st.markdown(f"""
+<div style="
+background: rgba(255,255,255,0.07);
+border-radius:18px;
+padding:30px;
+width:250px;
+height:180px;
+">
+    <div style="font-size:22px;font-weight:700;">
+        {latest['Time'].strftime('%m/%d')}
+    </div>
 
-    max_rain = max(daily_rain.max(), 0.01)
+    <br>
 
-    for col, (date, rain) in zip(rain_cols, daily_rain.items()):
-        bar_height = int((rain / max_rain) * 80)
+    <div style="font-size:48px;font-weight:700;">
+        {today_rain:.2f}
+        <span style="font-size:24px;">in</span>
+    </div>
 
-        with col:
-            st.markdown(f"""
-            <div class="rain-card">
-                <b>{date.strftime('%m/%d')}</b><br><br>
-                <span style="font-size:28px;font-weight:700;">{rain:.2f}</span> in
-                <div style="height:90px; display:flex; align-items:end;">
-                    <div style="
-                        width:28px;
-                        height:{bar_height}px;
-                        background:#4d79ff;
-                        border-radius:12px;
-                        margin-top:10px;">
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+    <div style="
+        margin-top:20px;
+        height:20px;
+        background:rgba(255,255,255,0.12);
+        border-radius:20px;
+    ">
+        <div style="
+            width:{min(today_rain*20,100)}%;
+            height:20px;
+            background:#4d79ff;
+            border-radius:20px;
+        ">
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 with right:
     st.markdown("## 🧭 Pressure")
